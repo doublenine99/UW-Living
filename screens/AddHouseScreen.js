@@ -12,18 +12,6 @@ import { db } from '../config';
 
 
 
-// let pushHouse = (na, pri, des) => {
-//     db.ref('/houses').push({
-//         // id: 0,
-//         name: na,
-//         price: pri,
-//         availability: true,
-//         sharing: true,
-//         description: des,
-//         images: ""
-//     });
-// };
-
 
 
 export default class AddHouseScree extends Component {
@@ -47,25 +35,24 @@ export default class AddHouseScree extends Component {
 
     pushHouse = (na, pri, des) => {
         // let myRef = db.ref('/houses').push();
-        var houseRef = firebase.database().ref('/houses');
-        houseRef.once("value")
+        var houseRef = db.ref('/houses');
+        houseRef
+            .once("value")
             .then(function (snapshot) {
-                this.setState({pushId: numChildren});
-                console.log(snapshot.numChildren());
+                count = snapshot.numChildren();
+                // this.setState({pushId: count});
+                // console.log(snapshot.numChildren());
+                let value = {
+                    id: count,
+                    name: na,
+                    price: pri,
+                    availability: true,
+                    sharing: true,
+                    description: des,
+                    images: "test"
+                };
+                houseRef.child(count).set(value);
             });
-
-
-        let value = {
-            id: this.state.pushId,
-            name: na,
-            price: pri,
-            availability: true,
-            sharing: true,
-            description: des,
-            images: "test"
-        };
-        houseRef.child(id).set(value);
-        // db.ref('/houses' + key).set(value);
 
     }
     handleChange = e => {
@@ -87,12 +74,14 @@ export default class AddHouseScree extends Component {
         })
         return (
             <View style={styles.main}>
-                <Text style={styles.title}>Add Your House</Text>
+                {/* <Text style={styles.title}>Add Your House</Text> */}
 
                 <Text style={styles.title}>Enter the name of your house</Text>
                 <TextInput style={styles.itemInput} value={String(this.state.name)} onChangeText={(name) => { this.setState({ name }) }} />
                 <Text style={styles.title}>Enter the rent price for each month</Text>
-                <TextInput style={styles.itemInput} value={String(this.state.price)} onChangeText={(price) => { this.setState({ price }) }} />
+                <TextInput style={styles.itemInput} value={String(this.state.price)} 
+                 keyboardType ='numeric'  maxLength={4}
+                 onChangeText={(price) => { this.setState({ price }) }} />
                 <Text style={styles.title}>Please write some brief introduction to your house</Text>
                 <TextInput style={styles.itemInput} value={String(this.state.description)} onChangeText={(description) => { this.setState({ description }) }} />
                 {/* <Text style={styles.title}>Upload the images for your house</Text> */}
@@ -140,7 +129,7 @@ const styles = StyleSheet.create({
         height: 45,
         flexDirection: 'row',
         backgroundColor: 'white',
-        borderColor: 'white',
+        borderColor: 'black',
         borderWidth: 1,
         borderRadius: 8,
         marginBottom: 10,
