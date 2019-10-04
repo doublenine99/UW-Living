@@ -5,25 +5,24 @@ import {
     TouchableHighlight,
     StyleSheet,
     TextInput,
-    AlertIOS
+    Alert,
+    Button
 } from 'react-native';
 import firebase from 'firebase'
 import { db } from '../config';
+import * as ImagePicker from 'expo-image-picker';
 
 
-
-
+var houseRef = db.ref('/houses');
 
 export default class AddHouseScree extends Component {
     state = {
         pushId: 0,
         name: "",
         price: 0,
-        // availability: true,
-        // sharing: true,
         description: "",
-        // images: ""
     };
+
     componentDidMount() {
         const { navigate } = this.props.navigation;
         firebase.auth().onAuthStateChanged(user => {
@@ -32,10 +31,30 @@ export default class AddHouseScree extends Component {
             }
         })
     }
+    onChooseImagePress = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync();
+        //let result = await ImagePicker.launchImageLibraryAsync();
+        if (!result.cancelled) {
+            this.uploadImage(result.uri, this.state.name)
+                .then(() => {
+                    Alert.alert("Success");
+                })
+                .catch((error) => {
+                    Alert.alert('Error: ',error.message);
+                });
+        }
+    }
+    uploadImage = async (uri, imageName) => {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        var ref = firebase.storage().ref().child("images/" + imageName);
+        return ref.put(blob);
+    }
+
 
     pushHouse = (na, pri, des) => {
         // let myRef = db.ref('/houses').push();
-        var houseRef = db.ref('/houses');
+
         houseRef
             .once("value")
             .then(function (snapshot) {
@@ -55,15 +74,14 @@ export default class AddHouseScree extends Component {
             });
 
     }
-    handleChange = e => {
-        this.setState({
-            name: e.nativeEvent.text
-        });
-    };
     handleSubmit = () => {
         this.pushHouse(this.state.name, this.state.price, this.state.description);
-        AlertIOS.alert('Item saved successfully');
+        Alert.alert('Item saved successfully');
     };
+
+
+
+
 
     render() {
         const { navigate } = this.props.navigation;
@@ -79,19 +97,19 @@ export default class AddHouseScree extends Component {
                 <Text style={styles.title}>Enter the name of your house</Text>
                 <TextInput style={styles.itemInput} value={String(this.state.name)} onChangeText={(name) => { this.setState({ name }) }} />
                 <Text style={styles.title}>Enter the rent price for each month</Text>
-                <TextInput style={styles.itemInput} value={String(this.state.price)} 
-                 keyboardType ='numeric'  maxLength={4}
-                 onChangeText={(price) => { this.setState({ price }) }} />
+                <TextInput style={styles.itemInput} value={String(this.state.price)}
+                    keyboardType='numeric' maxLength={4}
+                    onChangeText={(price) => { this.setState({ price }) }} />
                 <Text style={styles.title}>Please write some brief introduction to your house</Text>
                 <TextInput style={styles.itemInput} value={String(this.state.description)} onChangeText={(description) => { this.setState({ description }) }} />
-                {/* <Text style={styles.title}>Upload the images for your house</Text> */}
-                {/* <TextInput style={styles.itemInput} onChange={this.handleChange} /> */}
+                {/* <Text style={styles.title}></Text> */}
+                <Button title="Upload the images for your house" onPress={this.onChooseImagePress} />
                 <TouchableHighlight
                     style={styles.button}
                     underlayColor="white"
                     onPress={this.handleSubmit}
                 >
-                    <Text style={styles.buttonText}>Add</Text>
+                    <Text style={styles.buttonText}>Submit</Text>
                 </TouchableHighlight>
             </View>
         );
