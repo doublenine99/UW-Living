@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import { View, Text, FlatList, ListView } from 'react-native';
 import { ListItem } from 'react-native-elements';
-import { HOUSES } from '../shared/houses';
+// import { HOUSES } from '../shared/houses';
 import firebase from 'firebase';
-
-
 
 
 export default class HouseScreen extends Component {
@@ -13,7 +11,7 @@ export default class HouseScreen extends Component {
     this.state = {
       houses: []
     };
-    const houseRef = firebase.database().ref('/houses');
+    let houseRef = firebase.database().ref('/houses');
     houseRef
       .once('value')
       .then(snapshot => {
@@ -21,11 +19,7 @@ export default class HouseScreen extends Component {
       })
   }
   componentDidUpdate() {
-    const houseRef = firebase.database().ref('/houses');
-    if (!Array.isArray(this.state.houses)){
- this.setState({houses: []});
-    }
-   
+    let houseRef = firebase.database().ref('/houses');
     houseRef
       .once('value')
       .then(snapshot => {
@@ -39,20 +33,19 @@ export default class HouseScreen extends Component {
   };
 
   render() {
-    // const renderHouseItem = ({ item, index }) => {
-    //   return (
-    //     <ListItem
-    //       key={item.id}
-    //       title={item.name}
-    //       subtitle={item.price}
-    //       hideChevron={true}
-    //       onPress={() => navigate('HouseDetail', { houseId: item.id })}
-    //       leftAvatar={{ source: require('../shared/images/house1.jpg') }}
-    //     />
-    //   );
-    // };
-    
+    imageURL = '';
+    let houseRef = firebase.database().ref('/houses');
+
     const renderHouseItem = ({ item, index }) => {
+      houseRef
+      .once('value')
+        .then(() => {
+          firebase.storage().ref().child("images/" + item.name).getDownloadURL()
+            .then(url => {
+              imageURL = url;
+            })
+        })
+      // console
       return (
         <ListItem
           key={index}
@@ -67,7 +60,7 @@ export default class HouseScreen extends Component {
 
     const { navigate } = this.props.navigation;
     // console.log("house:"+this.state.houses);
-    if (this.state.houses !=  null && this.state.houses.length > 0 ) {
+    if (this.state.houses != null && this.state.houses.length > 0) {
 
       return (
         // <Text>
@@ -78,7 +71,7 @@ export default class HouseScreen extends Component {
           renderItem={renderHouseItem}
           keyExtractor={item => item.id.toString()}
         />
-        
+
       );
     }
     else {
